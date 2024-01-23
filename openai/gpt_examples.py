@@ -4,7 +4,8 @@ import os
 load_dotenv()
 url_c ="/v1/chat/completions"
 url_embeddings = "/v1/embeddings"
-localhost ="http://127.0.0.1:8000"
+# localhost ="http://127.0.0.1:8000"
+localhost ="http://163.5.207.104:8000"
 openai = "https://api.openai.com"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 headers = {
@@ -62,6 +63,6 @@ def completions3():
 
     from openai import OpenAI
     client = OpenAI(api_key=OPENAI_API_KEY, base_url= openai.api_base)
-    response = client.chat.completions.create(**d_c2)
+    response = client.chat.completions.create(**d_c)
     return response
 
