@@ -1,0 +1,1 @@
+c:\Data\Study\NU\GIT\!GPT\py_LoserLove\bot\env\Scripts\activate
