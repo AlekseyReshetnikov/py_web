@@ -38,19 +38,20 @@ async def completions(request: Request):
         # Use the async version of requests (httpx) for better performance
         print(datetime.now())
         async with httpx.AsyncClient() as client:
-            response = await client.post(c.openai + c.completions, headers=headers, json=data)
+            response = await client.post(c.openai + c.completions, headers=headers, json=data, timeout= 120)
         print(datetime.now())
+        async def generate():
+            async for it in response.aiter_bytes():
+                yield it
         if "stream" in data and data["stream"]:
             # Create a generator function to stream the content
-            async def generate():
-                async for it in response.aiter_bytes():
-                    yield it
             # Return the streaming response
             return StreamingResponse(content=generate(), media_type="application/json", status_code = response.status_code)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-        print(datetime.now())
-        print("###@@@@  ",response.status_code)
-        return response.json()
+        return StreamingResponse(content=generate(), media_type="application/json", status_code = response.status_code)
+        # response.raise_for_status()  # Raise an HTTPError for bad responses
+        # print(datetime.now())
+        # print("###@@@@  ",response.status_code)
+        # return response.json()
 
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON format in the request body")
@@ -69,11 +70,13 @@ async def my_request(request: Request, path:str):
         # response = requests.post(c.openai + c.completions, headers=headers, json = data)
         # Use the async version of requests (httpx) for better performance
         print(datetime.now())
+        
         async with httpx.AsyncClient() as client:
-            response = await client.post(c.openai + path, headers=headers, json=data)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-        print(datetime.now(), " ###@@@@  ", response.status_code)
-        return response.json()
+            response = await client.post(c.openai + path, headers=headers, json=data, timeout= 120)
+        async def generate():
+            async for it in response.aiter_bytes():
+                yield it
+        return StreamingResponse(content=generate(), media_type="application/json", status_code = response.status_code)
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON format in the request body")
     except requests.RequestException as e:
@@ -91,23 +94,4 @@ async def completions1(request: Request):
 
 @app.post("/v1/embeddings")
 async def embeddings(request: Request):
-    try:
-        headers = get_headers(request)
-        body = await request.body()
-        data = json.loads(body.decode("utf-8"))
-        print(datetime.now(), " embeddings ", data)
-        # response = requests.post(c.openai + c.completions, headers=headers, json = data)
-        # Use the async version of requests (httpx) for better performance
-        print(datetime.now())
-        async with httpx.AsyncClient() as client:
-            response = await client.post(c.openai + c.completions, headers=headers, json=data)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-        print(datetime.now(), " ###@@@@  ", response.status_code)
-        return response.json()
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON format in the request body")
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error connecting to OpenAI API: {str(e)}")
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
-
+    return await my_request(request, c.embeddings)
