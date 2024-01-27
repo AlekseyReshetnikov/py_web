@@ -11,6 +11,7 @@ class Const:
     completions = "/v1/chat/completions"
     completions1 = "/v1/completions"
     embeddings = "/v1/embeddings"
+    audio_transcriptions ="/v1/audio/transcriptions"
     headers = ["authorization", "content-type"]
     generations = "/v1/images/generations"
 c = Const()
@@ -95,3 +96,8 @@ async def completions1(request: Request):
 @app.post("/v1/embeddings")
 async def embeddings(request: Request):
     return await my_request(request, c.embeddings)
+
+@app.post("/v1/audio/transcriptions")
+async def audio_transcriptions(request: Request):
+    return await my_request(request, c.audio_transcriptions)
+

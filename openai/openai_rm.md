@@ -54,13 +54,19 @@ curl https://api.openai.com/v1/chat/completions \
 https://vsegpt.ru/Docs/API#h84-4
 
 
+api_key = os.environ.get("OPENAI_API_KEY")
+api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
+
 
 endpoint ="http://163.5.207.104:8000/v1"
 import openai
 openai.api_key = OPENAI_API_KEY
 openai.api_base = endpoint
 from openai import OpenAI
+
 client = OpenAI(api_key=OPENAI_API_KEY, base_url= openai.api_base)
+embeddings =OpenAIEmbeddings(openai_api_base=config.OPENAI_END_POINT)
+
 response = client.chat.completions.create(**)
 
 
