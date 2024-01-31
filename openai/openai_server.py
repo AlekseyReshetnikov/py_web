@@ -127,6 +127,6 @@ async def v1_p1_p2(p1:str, p2:str, request: Request):
     return await my_request(request, f"{c.v1}/{p1}/{p2}")
 
 @app.post("/v1/{p1}/{p2}/{p3}")
-async def v1_p1_p2(p1:str, p2:str, p3:str, request: Request):
+async def v1_p1_p3(p1:str, p2:str, p3:str, request: Request):
     return await my_request(request, f"{c.v1}/{p1}/{p2}/{p3}")
 
