@@ -1,3 +1,7 @@
+# start
+
+uvicorn openai_server:app --reload
+
 # Алгоритм работы 
 ловим запросы к OpenAI и перебрасываем на их сайт
 
