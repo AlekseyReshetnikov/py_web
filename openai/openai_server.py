@@ -12,7 +12,7 @@ class Const:
     completions1 = "/v1/completions"
     embeddings = "/v1/embeddings"
     audio_transcriptions ="/v1/audio/transcriptions"
-    headers = ["authorization", "content-type"]
+    headers = ["authorization", "content-type","content-length","accept-encoding","accept"]
     generations = "/v1/images/generations"
     v1 = "/v1"
 c = Const()
@@ -102,6 +102,31 @@ async def my_request(request: Request, path:str):
     except httpx.HTTPStatusError as e:
         raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
 
+async def my_request_f(request: Request, path:str):
+    try:
+        # with open("test.txt","w",encoding="utf-8") as f:
+        #     json.dump( request.headers.items(),f)
+        headers = get_headers(request)
+        body = await request.body()
+        print(datetime.now(), " path ")
+        # response = requests.post(c.openai + c.completions, headers=headers, json = data)
+        # Use the async version of requests (httpx) for better performance
+        print(datetime.now())
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(c.openai + path, headers=headers, content= body, timeout= 120)
+        async def generate():
+            async for it in response.aiter_bytes():
+                yield it
+        return StreamingResponse(content=generate(), media_type="application/json", status_code = response.status_code)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON format in the request body")
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error connecting to OpenAI API: {str(e)}")
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
+
+
 @app.post("/v1/images/generations")
 async def generations(request: Request):
     return await my_request(request, c.generations)
@@ -116,7 +141,7 @@ async def embeddings(request: Request):
 
 @app.post("/v1/audio/transcriptions")
 async def audio_transcriptions(request: Request):
-    return await my_request(request, c.audio_transcriptions)
+    return await my_request_f(request, c.audio_transcriptions)
 
 @app.post("/v1/{p1}")
 async def v1_p1(p1:str, request: Request):
@@ -124,9 +149,9 @@ async def v1_p1(p1:str, request: Request):
 
 @app.post("/v1/{p1}/{p2}")
 async def v1_p1_p2(p1:str, p2:str, request: Request):
-    return await my_request(request, f"{c.v1}/{p1}/{p2}")
+    return await my_request_f(request, f"{c.v1}/{p1}/{p2}")
 
 @app.post("/v1/{p1}/{p2}/{p3}")
 async def v1_p1_p3(p1:str, p2:str, p3:str, request: Request):
-    return await my_request(request, f"{c.v1}/{p1}/{p2}/{p3}")
+    return await my_request_f(request, f"{c.v1}/{p1}/{p2}/{p3}")
 
